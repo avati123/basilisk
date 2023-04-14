@@ -1,58 +1,53 @@
-import Tkinter as tk
+import tkinter as tk
+from PIL import Image, ImageTk
 
-class Page(tk.Frame):
+
+class tkinterApp(tk.Tk):
     def __init__(self, *args, **kwargs):
-        tk.Frame.__init__(self, *args, **kwargs)
-    def show(self):
-        self.lift()
+        tk.Tk.__init__(self, *args, **kwargs)
+        self.title("Title")
+        self.container = tk.Frame(self)
+        self.container.pack(side="top", fill="both", expand=True)
+        self.frames = {}
 
-class Page1(Page):
-   def __init__(self, *args, **kwargs):
-       Page.__init__(self, *args, **kwargs)
-       label = tk.Label(self, text="This is page 1")
-       label.pack(side="top", fill="both", expand=True)
+        for F in (StartPage, Page1):
+            frame = F(self.container, self)
+            self.frames[F] = frame
 
-class Page2(Page):
-   def __init__(self, *args, **kwargs):
-       Page.__init__(self, *args, **kwargs)
-       label = tk.Label(self, text="This is page 2")
-       label.pack(side="top", fill="both", expand=True)
+            frame.grid(row=0, column=0, sticky="nsew")
+        self.update()
+        self.show_frame(StartPage)
 
-class Page3(Page):
-   def __init__(self, *args, **kwargs):
-       Page.__init__(self, *args, **kwargs)
-       label = tk.Label(self, text="This is page 3")
-       label.pack(side="top", fill="both", expand=True)
+    def show_frame(self, cont):  # cont = page_name
+        if cont not in self.frames:
+            self.frames[cont] = cont(self.container, self)
+        frame = self.frames[cont]
+        frame.tkraise()
+        frame.event_generate("<<ShowFrame>>")
 
-class MainView(tk.Frame):
-    def __init__(self, *args, **kwargs):
-        tk.Frame.__init__(self, *args, **kwargs)
-        p1 = Page1(self)
-        p2 = Page2(self)
-        p3 = Page3(self)
 
-        buttonframe = tk.Frame(self)
-        container = tk.Frame(self)
-        buttonframe.pack(side="top", fill="x", expand=False)
-        container.pack(side="top", fill="both", expand=True)
+class StartPage(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        tk.Label(self, text='StartPage').pack()
+        self.bind("<<ShowFrame>>", self.myStartPage)
+        self.controller = controller
 
-        p1.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
-        p2.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
-        p3.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
+    def printcehck(self, event):
+        print("hack")
 
-        b1 = tk.Button(buttonframe, text="Page 1", command=p1.show)
-        b2 = tk.Button(buttonframe, text="Page 2", command=p2.show)
-        b3 = tk.Button(buttonframe, text="Page 3", command=p3.show)
+    def myStartPage(self, controller):
+        super(StartPage).__init__()
+        print(controller)
+        self.controller.show_frame(Page1)
 
-        b1.pack(side="left")
-        b2.pack(side="left")
-        b3.pack(side="left")
 
-        p1.show()
+class Page1(tk.Frame):
+    def __init__(self, parent, controller):
+        self.controller = controller
+        tk.Frame.__init__(self, parent)
+        tk.Label(self, text='Page1').pack()
 
-if __name__ == "__main__":
-    root = tk.Tk()
-    main = MainView(root)
-    main.pack(side="top", fill="both", expand=True)
-    root.wm_geometry("400x400")
-    root.mainloop()
+
+if __name__ == '__main__':
+    tkinterApp().mainloop()
